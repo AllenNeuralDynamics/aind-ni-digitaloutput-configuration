@@ -48,6 +48,7 @@ namespace Aind.Ni.DigitalOutput.Configuration
 
     /// <summary>
     /// Provides configuration for NI-DAQmx Digital Output Channels that can be externalized from workflows.
+    /// This source generates DigitalOutputConfig objects containing channel configuration data.
     /// </summary>
     [Combinator]
     [Description("Provides configuration for Digital Output Channel")]
