@@ -28,6 +28,8 @@ To install the aind-ni-digitaloutput-configuration package:
 ### Key Components
 
 - **DigitalOutputConfigurationSource**: Generates a configuration object for Digital Output Channels that can be used with other DAQmx nodes
+- **DigitalOutputConfig**: Configuration object containing channel setup parameters
+- **DigitalLineGrouping**: Enum specifying how to group digital lines into virtual channels
 
 ### Example
 
@@ -53,12 +55,12 @@ See the [examples directory](examples/) for sample workflows:
 
 ## Output
 
-The `DigitalOutputConfigurationSource` produces a `DigitalOutputChannelConfiguration` object that contains:
+The `DigitalOutputConfigurationSource` produces a `DigitalOutputConfig` object that contains:
 - `ChannelName`: The configured channel name
 - `Lines`: The configured physical lines
 - `Grouping`: The configured line grouping
 
-This configuration object can be consumed by other Bonsai.DAQmx nodes that accept digital output channel configurations.
+This configuration object can be consumed by other Bonsai.DAQmx nodes or used to programmatically configure digital output channels.
 
 ## Deployment
 
