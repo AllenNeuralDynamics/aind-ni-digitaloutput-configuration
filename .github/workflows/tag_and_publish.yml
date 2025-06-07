@@ -43,15 +43,19 @@ jobs:
           
           // Check if tag already exists
           try {
-            await github.rest.git.getRef({
+            const { data: existingTag } = await github.rest.git.getRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: `refs/tags/${tagName}`
             })
-            core.setFailed(`Tag ${tagName} already exists`)
+            console.log(`Tag ${tagName} already exists, skipping tag creation`)
             return
           } catch (e) {
-            // Tag doesn't exist, so we can create it
+            if (e.status !== 404) {
+              throw e
+            }
+            // Tag doesn't exist (404), so we can create it
+            console.log(`Tag ${tagName} does not exist, creating it`)
           }
           
           // Get the current commit SHA

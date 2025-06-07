@@ -10,6 +10,8 @@ A [Bonsai](https://bonsai-rx.org/) library for configuring NI-DAQmx Digital Outp
 
 This package provides a node for exposing NI-DAQmx Digital Output Channel configuration properties that can be set externally from workflows, instead of only through the Bonsai UI. This enables programmatic configuration and better workflow automation for digital output tasks.
 
+**Version 1.1.0** includes compatibility fixes for CI/CD builds with published Bonsai.DAQmx NuGet packages.
+
 ## Installation
 
 To install the aind-ni-digitaloutput-configuration package:

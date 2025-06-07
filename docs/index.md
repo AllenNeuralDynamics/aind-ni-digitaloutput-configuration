@@ -4,6 +4,12 @@
 
 The `aind-ni-digitaloutput-configuration` package provides Bonsai nodes for configuring NI-DAQmx Digital Output Channels programmatically, allowing external configuration instead of relying solely on the Bonsai UI.
 
+**Key Features:**
+- Cross-platform development support (build on macOS/Linux, run on Windows)
+- Compatibility with published Bonsai.DAQmx NuGet packages
+- Self-contained configuration types for maximum compatibility
+- CI/CD ready with automated NuGet publishing
+
 ## API Reference
 
 ### DigitalOutputConfigurationSource
