@@ -7,9 +7,10 @@
                  xmlns="https://bonsai-rx.org/2018/workflow">
   <Workflow>
     <Nodes>
-      <!-- Digital Output Configuration Source -->
+      <!-- Method 1: Property Mapping (Recommended) -->
+      <!-- Digital Output Channel Configuration for Property Mapping -->
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="aind:DigitalOutputConfigurationSource">
+        <Combinator xsi:type="aind:ConfigureDigitalOutputChannels">
           <aind:ChannelName>MyDigitalOutput</aind:ChannelName>
           <aind:Lines>Dev1/port0/line0:7</aind:Lines>
           <aind:Grouping>OneChannelForAllLines</aind:Grouping>
@@ -35,29 +36,32 @@
         <Expression>new byte[] { (byte)it }</Expression>
       </Expression>
       
-      <!-- Combine configuration with data -->
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="rx:WithLatestFrom" />
-      </Expression>
-      
-      <!-- Digital Output Node -->
+      <!-- Digital Output Node with Property Mapping -->
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="daqmx:DigitalOutput">
           <daqmx:SignalSource>None</daqmx:SignalSource>
+          <!-- Channels property can be connected to ConfigureDigitalOutputChannels output -->
+        </Combinator>
+      </Expression>
+      
+      <!-- Method 2: Configuration Source (Alternative approach) -->
+      <!-- Digital Output Configuration Source -->
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="aind:DigitalOutputConfigurationSource">
+          <aind:ChannelName>AltDigitalOutput</aind:ChannelName>
+          <aind:Lines>Dev1/port1/line0:7</aind:Lines>
+          <aind:Grouping>OneChannelForEachLine</aind:Grouping>
         </Combinator>
       </Expression>
     </Nodes>
     <Edges>
-      <!-- Connect configuration to combiner -->
-      <Edge From="0" To="4" />
+      <!-- Connect ConfigureDigitalOutputChannels to DigitalOutput.Channels property -->
+      <Edge From="0" To="4" Label="Source1" />
       
-      <!-- Connect timer through data processing -->
-      <Edge From="1" To="2" />
-      <Edge From="2" To="3" />
-      <Edge From="3" To="4" />
-      
-      <!-- Connect combined data to digital output -->
-      <Edge From="4" To="5" />
+      <!-- Connect data flow for digital output -->
+      <Edge From="1" To="2" Label="Source1" />
+      <Edge From="2" To="3" Label="Source1" />
+      <Edge From="3" To="4" Label="Source1" />
     </Edges>
   </Workflow>
 </WorkflowBuilder>
