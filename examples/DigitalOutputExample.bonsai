@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WorkflowBuilder Version="2.7.0"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xmlns:aind="clr-namespace:Aind.Ni.DigitalOutput.Configuration;assembly=Aind.Ni.DigitalOutput.Configuration"
+                 xmlns:daqmx="clr-namespace:Bonsai.DAQmx;assembly=Bonsai.DAQmx"
+                 xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
+                 xmlns="https://bonsai-rx.org/2018/workflow">
+  <Workflow>
+    <Nodes>
+      <!-- Digital Output Configuration Source -->
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="aind:DigitalOutputConfigurationSource">
+          <aind:ChannelName>MyDigitalOutput</aind:ChannelName>
+          <aind:Lines>Dev1/port0/line0:7</aind:Lines>
+          <aind:Grouping>OneChannelForAllLines</aind:Grouping>
+        </Combinator>
+      </Expression>
+      
+      <!-- Generate Sample Data Pattern -->
+      <Expression xsi:type="rx:Timer">
+        <rx:DueTime>PT1S</rx:DueTime>
+        <rx:Period>PT0.5S</rx:Period>
+      </Expression>
+      
+      <!-- Convert to byte pattern -->
+      <Expression xsi:type="rx:Scan">
+        <rx:Accumulator>
+          <rx:Seed>0</rx:Seed>
+          <rx:Accumulate>((it + 1) % 256)</rx:Accumulate>
+        </rx:Accumulator>
+      </Expression>
+      
+      <!-- Convert to byte array -->
+      <Expression xsi:type="ExpressionTransform">
+        <Expression>new byte[] { (byte)it }</Expression>
+      </Expression>
+      
+      <!-- Combine configuration with data -->
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="rx:WithLatestFrom" />
+      </Expression>
+      
+      <!-- Digital Output Node -->
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="daqmx:DigitalOutput">
+          <daqmx:SignalSource>None</daqmx:SignalSource>
+        </Combinator>
+      </Expression>
+    </Nodes>
+    <Edges>
+      <!-- Connect configuration to combiner -->
+      <Edge From="0" To="4" />
+      
+      <!-- Connect timer through data processing -->
+      <Edge From="1" To="2" />
+      <Edge From="2" To="3" />
+      <Edge From="3" To="4" />
+      
+      <!-- Connect combined data to digital output -->
+      <Edge From="4" To="5" />
+    </Edges>
+  </Workflow>
+</WorkflowBuilder>
