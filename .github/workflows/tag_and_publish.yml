@@ -17,12 +17,12 @@ jobs:
     runs-on: windows-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
         
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 6.0.x
         
@@ -35,7 +35,7 @@ jobs:
         echo "version=$version" >> $env:GITHUB_OUTPUT
         
     - name: Create tag
-      uses: actions/github-script@v6
+      uses: actions/github-script@v7
       with:
         script: |
           const version = '${{ steps.get_version.outputs.version }}'
