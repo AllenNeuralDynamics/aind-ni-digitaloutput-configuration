@@ -1,19 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>net462</TargetFramework>
+    <Platform>x64</Platform>
     <AssemblyTitle>Aind.Ni.DigitalOutput.Configuration</AssemblyTitle>
     <AssemblyDescription>A Bonsai library for configurable NI-DAQmx Digital Output with external channel configuration support.</AssemblyDescription>
     <AssemblyCompany>Allen Institute for Neural Dynamics</AssemblyCompany>
     <AssemblyProduct>Aind.Ni.DigitalOutput.Configuration</AssemblyProduct>
     <Copyright>Copyright © Allen Institute for Neural Dynamics 2024</Copyright>
-    <Version>1.4.0</Version>
-    <AssemblyVersion>1.4.0.0</AssemblyVersion>
-    <FileVersion>1.4.0.0</FileVersion>
+    <Version>1.5.0</Version>
+    <AssemblyVersion>1.5.0.0</AssemblyVersion>
+    <FileVersion>1.5.0.0</FileVersion>
     
     <!-- NuGet Package Metadata -->
     <PackageId>Aind.Ni.DigitalOutput.Configuration</PackageId>
-    <PackageDescription>A Bonsai library that provides configurable NI-DAQmx Digital Output functionality with external channel configuration support. Enables runtime channel configuration and more flexible digital output workflows.</PackageDescription>
+    <PackageDescription>A Bonsai library that provides configurable NI-DAQmx Digital Output functionality with external channel configuration support. Enables runtime channel configuration and more flexible digital output workflows. Uses Bonsai.DAQmx for DAQmx assembly dependencies.</PackageDescription>
     <PackageTags>bonsai;daqmx;ni;digital-output;configuration;hardware;automation</PackageTags>
     <PackageProjectUrl>https://github.com/AllenNeuralDynamics/aind-ni-digitaloutput-configuration</PackageProjectUrl>
     <RepositoryUrl>https://github.com/AllenNeuralDynamics/aind-ni-digitaloutput-configuration</RepositoryUrl>
@@ -21,13 +22,10 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    
-    <!-- CI Build Support -->
-    <DefineConstants Condition="'$(CI_BUILD)' == 'true'">CI_BUILD</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bonsai.Core" Version="2.8.5" />
+    <PackageReference Include="Bonsai.Core" Version="2.7.0" />
     <PackageReference Include="Bonsai.DAQmx" Version="0.4.0" />
     <PackageReference Include="OpenCV.Net" Version="3.4.1" />
     <PackageReference Include="Rx-Linq" Version="2.2.5" />

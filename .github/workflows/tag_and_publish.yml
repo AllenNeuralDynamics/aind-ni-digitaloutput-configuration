@@ -41,17 +41,17 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj
       
-    - name: Build with CI flag (creates working assembly)
-      run: dotnet build src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj --configuration Release --no-restore -p:CI_BUILD=true
+    - name: Build using Bonsai.DAQmx assemblies
+      run: dotnet build src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj --configuration Release --no-restore
       
     - name: Create NuGet package
-      run: dotnet pack src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj --configuration Release --output ./artifacts --no-build -p:CI_BUILD=true
+      run: dotnet pack src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj --configuration Release --output ./artifacts --no-build
       
     - name: Verify package
       run: |
-        echo "✅ NuGet package created successfully with CI_BUILD flag"
-        echo "Package contains pre-compiled assemblies that work with conditional compilation"
-        echo "When installed on Windows with DAQmx, full functionality will be available"
+        echo "✅ NuGet package created successfully using Bonsai.DAQmx assemblies"
+        echo "Package contains pre-compiled assemblies with full DAQmx functionality"
+        echo "Works seamlessly with Bonsai.DAQmx package dependency"
         Get-ChildItem ./artifacts/*.nupkg | ForEach-Object {
           echo "Package: $($_.Name) ($($_.Length) bytes)"
         }

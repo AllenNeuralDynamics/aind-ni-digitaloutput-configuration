@@ -1,8 +1,6 @@
 using System;
 using System.Reactive.Linq;
-#if !CI_BUILD
 using NationalInstruments.DAQmx;
-#endif
 using System.Reactive.Disposables;
 using System.ComponentModel;
 using OpenCV.Net;
@@ -41,7 +39,6 @@ namespace Aind.Ni.DigitalOutput.Configuration
         [Description("The sampling rate for writing logical values, in samples per second.")]
         public double SampleRate { get; set; } = 1000.0;
 
-#if !CI_BUILD
         /// <summary>
         /// Gets or sets a value specifying on which edge of a clock pulse sampling takes place.
         /// </summary>
@@ -54,7 +51,6 @@ namespace Aind.Ni.DigitalOutput.Configuration
         /// </summary>
         [Description("Specifies whether the writer task will generate a finite number of samples or if it continuously generates samples.")]
         public SampleQuantityMode SampleMode { get; set; } = SampleQuantityMode.ContinuousSamples;
-#endif
 
         /// <summary>
         /// Gets or sets the number of samples to generate, for finite samples, or the
@@ -63,7 +59,6 @@ namespace Aind.Ni.DigitalOutput.Configuration
         [Description("The number of samples to generate, for finite samples, or the size of the buffer for continuous samples.")]
         public int BufferSize { get; set; } = 1000;
 
-#if !CI_BUILD
         Task CreateTask(DigitalOutputChannelConfig[] channels)
         {
             var task = string.IsNullOrEmpty(TaskName) ? new Task() : new Task(TaskName);
@@ -130,7 +125,6 @@ namespace Aind.Ni.DigitalOutput.Configuration
                     }));
             });
         }
-#endif
 
         /// <summary>
         /// Writes an observable sequence of logical values to one or more DAQmx
@@ -153,16 +147,12 @@ namespace Aind.Ni.DigitalOutput.Configuration
             IObservable<bool> source, 
             IObservable<DigitalOutputChannelConfig> channelConfig)
         {
-#if CI_BUILD
-            throw new NotSupportedException("ConfigurableDigitalOutput requires the full DAQmx runtime and is not supported in CI builds.");
-#else
             return channelConfig.Take(1).SelectMany(config =>
                 ProcessSingleSample(source, new[] { config }, (writer, value) =>
                 {
                     writer.WriteSingleSampleSingleLine(autoStart: true, new[] { value });
                 })
             );
-#endif
         }
 
         /// <summary>
@@ -186,16 +176,12 @@ namespace Aind.Ni.DigitalOutput.Configuration
             IObservable<bool[]> source, 
             IObservable<DigitalOutputChannelConfig> channelConfig)
         {
-#if CI_BUILD
-            throw new NotSupportedException("ConfigurableDigitalOutput requires the full DAQmx runtime and is not supported in CI builds.");
-#else
             return channelConfig.Take(1).SelectMany(config =>
                 ProcessSingleSample(source, new[] { config }, (writer, data) =>
                 {
                     writer.WriteSingleSampleSingleLine(autoStart: true, data);
                 })
             );
-#endif
         }
 
         /// <summary>
@@ -220,9 +206,6 @@ namespace Aind.Ni.DigitalOutput.Configuration
             IObservable<Mat> source, 
             IObservable<DigitalOutputChannelConfig> channelConfig)
         {
-#if CI_BUILD
-            throw new NotSupportedException("ConfigurableDigitalOutput requires the full DAQmx runtime and is not supported in CI builds.");
-#else
             return channelConfig.Take(1).SelectMany(config =>
                 ProcessMultiSample(source, new[] { config }, (writer, input) =>
                 {
@@ -244,10 +227,8 @@ namespace Aind.Ni.DigitalOutput.Configuration
                     }
                 })
             );
-#endif
         }
 
-#if !CI_BUILD
         static TArray[,] GetMultiSampleArray<TArray>(Mat input) where TArray : unmanaged
         {
             var data = new TArray[input.Rows, input.Cols];
@@ -260,6 +241,5 @@ namespace Aind.Ni.DigitalOutput.Configuration
             }
             finally { dataHandle.Free(); }
         }
-#endif
     }
 }

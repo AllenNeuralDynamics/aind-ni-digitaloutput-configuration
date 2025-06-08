@@ -1,7 +1,5 @@
 using System.ComponentModel;
-#if !CI_BUILD
 using NationalInstruments.DAQmx;
-#endif
 
 namespace Aind.Ni.DigitalOutput.Configuration
 {
@@ -47,7 +45,6 @@ namespace Aind.Ni.DigitalOutput.Configuration
         [Description("Specifies how to group digital lines into one or more virtual channels.")]
         public DigitalLineGrouping Grouping { get; set; } = DigitalLineGrouping.OneChannelForEachLine;
 
-#if !CI_BUILD
         /// <summary>
         /// Converts this configuration to a Bonsai.DAQmx.DigitalOutputChannelConfiguration.
         /// </summary>
@@ -61,6 +58,5 @@ namespace Aind.Ni.DigitalOutput.Configuration
                 Grouping = (ChannelLineGrouping)this.Grouping
             };
         }
-#endif
     }
 }

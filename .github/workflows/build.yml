@@ -22,18 +22,18 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj
       
-    - name: Build with CI flag (excludes DAQmx dependencies)
-      run: dotnet build src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj --no-restore --configuration Release -p:CI_BUILD=true
+    - name: Build (using Bonsai.DAQmx assemblies)
+      run: dotnet build src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj --no-restore --configuration Release
       
     - name: Verify build success
       run: |
         echo "✅ Build completed successfully"
-        echo "Built with CI_BUILD=true to exclude DAQmx runtime dependencies"
-        echo "This creates a working assembly that can be packaged and distributed"
+        echo "Built using DAQmx assemblies provided by Bonsai.DAQmx package"
+        echo "No conditional compilation needed - Bonsai.DAQmx provides all required assemblies"
         
     - name: Verify compiled assembly
       run: |
-        $dllPath = "src/Aind.Ni.DigitalOutput.Configuration/bin/Release/net472/Aind.Ni.DigitalOutput.Configuration.dll"
+        $dllPath = "src/Aind.Ni.DigitalOutput.Configuration/bin/x64/Release/net462/Aind.Ni.DigitalOutput.Configuration.dll"
         if (Test-Path $dllPath) {
           echo "✅ Assembly created successfully: $dllPath"
           $fileInfo = Get-Item $dllPath
@@ -46,14 +46,14 @@ jobs:
       shell: pwsh
 
     - name: Create NuGet package
-      run: dotnet pack src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj --configuration Release --output ./artifacts --no-build -p:CI_BUILD=true
+      run: dotnet pack src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj --configuration Release --output ./artifacts --no-build
       
     - name: Verify package contents
       run: |
         echo "✅ NuGet package created successfully"
-        echo "Package contains pre-compiled assemblies with conditional compilation"
-        echo "When installed, the package will work on Windows with NI-DAQmx drivers"
-        echo "DAQmx functionality is included but gracefully handles missing drivers"
+        echo "Package contains pre-compiled assemblies that depend on Bonsai.DAQmx"
+        echo "When installed, both packages will work together seamlessly"
+        echo "Full DAQmx functionality available on systems with NI-DAQmx drivers"
         
         # List package files
         Get-ChildItem ./artifacts/*.nupkg | ForEach-Object {

@@ -2,128 +2,115 @@
 
 ## Overview
 
-This project provides a robust solution for NI-DAQmx Digital Output in Bonsai environments while handling the complexity of DAQmx dependencies in CI/CD pipelines. The strategy uses conditional compilation to create packages that work seamlessly for end users while enabling successful CI builds.
+This project uses a **simplified and robust approach** by leveraging the Bonsai.DAQmx NuGet package to provide all necessary DAQmx assemblies. This eliminates the need for conditional compilation and provides a professional, maintainable solution.
 
 ## Build Strategy
 
-### 1. Conditional Compilation Build ✅
-- **Purpose**: Create working assemblies that can be packaged and distributed
-- **Platform**: Windows (GitHub Actions)
-- **Method**: Uses `CI_BUILD=true` flag to conditionally compile code
-- **Command**: `dotnet build -p:CI_BUILD=true`
-- **Result**: ✅ Successfully builds pre-compiled assemblies without DAQmx runtime dependencies
-- **Status**: ✅ Always passes and creates distributable packages
-
-### 2. Package Creation ✅
-- **Purpose**: Create NuGet packages with pre-compiled assemblies
-- **Platform**: Windows (GitHub Actions)
-- **Dependencies**: Conditional compilation build
-- **Method**: `dotnet pack -p:CI_BUILD=true` creates packages with working assemblies
-- **Result**: ✅ Package contains pre-compiled DLLs that work correctly for end users
+### Simple Dependency-Based Build ✅
+- **Purpose**: Create working assemblies using DAQmx assemblies provided by Bonsai.DAQmx
+- **Platform**: Windows (GitHub Actions) 
+- **Method**: Standard .NET build with package dependencies
+- **Command**: `dotnet build --configuration Release`
+- **Result**: ✅ Always builds successfully using assemblies from Bonsai.DAQmx package
+- **Status**: ✅ Professional, reliable CI/CD pipeline
 
 ## How It Works
 
-**Key Insight**: The project uses conditional compilation to exclude DAQmx-specific code during CI builds, then packages the resulting assemblies. When end users install the package on systems with DAQmx drivers, the full functionality is available through runtime checks and graceful fallbacks.
-
-### Conditional Compilation Implementation
-
-The source code uses conditional compilation directives to handle DAQmx dependencies:
-
-```csharp
-#if !CI_BUILD
-using NationalInstruments.DAQmx;
-#endif
-
-// DAQmx-dependent code is conditionally included:
-#if !CI_BUILD
-    // Full DAQmx implementation
-    // This code is included in the final package but excluded during CI builds
-#else
-    // CI build fallback - provides meaningful error messages
-    throw new NotSupportedException("ConfigurableDigitalOutput requires NI-DAQmx drivers to be installed.");
-#endif
-```
+**Key Insight**: The Bonsai.DAQmx NuGet package includes the actual DAQmx assemblies and provides them through MSBuild props files. Our project simply depends on this package and uses the assemblies it provides.
 
 ### Project Configuration
 
-The project file automatically applies the CI_BUILD flag when the environment variable is set:
+```xml
+<ItemGroup>
+  <PackageReference Include="Bonsai.DAQmx" Version="0.4.0" />
+</ItemGroup>
+```
+
+The Bonsai.DAQmx package automatically:
+- ✅ Provides `NationalInstruments.DAQmx.dll` for x64 and x86 platforms
+- ✅ Includes `NationalInstruments.Common.dll` in the lib folder
+- ✅ Sets up proper assembly references through build props
+- ✅ Handles platform-specific assembly resolution
+
+### Target Framework Alignment
 
 ```xml
-<DefineConstants Condition="'$(CI_BUILD)' == 'true'">CI_BUILD</DefineConstants>
+<TargetFramework>net462</TargetFramework>
 ```
+
+We align our target framework with Bonsai.DAQmx (net462) to ensure full compatibility and proper assembly resolution.
 
 ## Package Distribution Strategy
 
 The final NuGet package contains:
-- ✅ **Pre-compiled assemblies** built with conditional compilation
-- ✅ **Full source code** with DAQmx functionality preserved  
-- ✅ **Proper dependency references** to Bonsai.DAQmx
-- ✅ **Runtime compatibility** with Windows + NI-DAQmx installations
+- ✅ **Pre-compiled assemblies** built against Bonsai.DAQmx assemblies
+- ✅ **Dependency on Bonsai.DAQmx** ensuring all required assemblies are available
+- ✅ **Full DAQmx functionality** without conditional compilation complexity
+- ✅ **Professional packaging** following standard .NET practices
 
 ## Workflow Files
 
 ### `.github/workflows/build.yml`
-- **Build**: ✅ Always passes - builds with `CI_BUILD=true`
-- **Package**: ✅ Creates NuGet packages with working assemblies
-- **Verification**: ✅ Confirms assemblies are created and packaged
+- **Build**: ✅ Always passes using Bonsai.DAQmx assemblies
+- **Package**: ✅ Creates standard NuGet packages
+- **Verification**: ✅ Confirms assemblies and packages are created correctly
 
 ### `.github/workflows/tag_and_publish.yml`
-- **Build**: ✅ Builds successfully with conditional compilation
-- **Package**: ✅ Creates distributable NuGet packages
-- **Publish**: ✅ Publishes to NuGet.org with working assemblies
+- **Build**: ✅ Reliable builds using dependency assemblies
+- **Package**: ✅ Professional NuGet package creation
+- **Publish**: ✅ Standard package publishing to NuGet.org
 
 ## Why This Strategy Works
 
-1. **Successful CI Builds**: No more "expected failures" - all builds pass
-2. **Working Packages**: End users receive pre-compiled assemblies that work immediately
-3. **Full Functionality**: DAQmx features are preserved and available when drivers are present
-4. **Cross-Platform Development**: Developers can work on any platform using CI_BUILD mode
-5. **Professional Distribution**: Standard NuGet packages with compiled assemblies
+1. **Leverage Existing Infrastructure**: Uses Bonsai.DAQmx's proven assembly distribution
+2. **No Conditional Compilation**: Clean, maintainable code without preprocessor directives
+3. **Standard .NET Practices**: Follows conventional dependency management patterns
+4. **Reliable CI/CD**: No "expected failures" or complex workarounds
+5. **Professional Distribution**: Creates standard packages that work like any other .NET library
 
 ## Local Development
 
-- **On macOS/Linux**: Use `dotnet build -p:CI_BUILD=true` for development without DAQmx
-- **On Windows without DAQmx**: Same as above - builds successfully  
-- **On Windows with DAQmx**: Can build with `dotnet build` (full mode) or CI mode
-- **Testing**: Use conditional compilation to provide appropriate fallbacks
+- **Any Platform**: Standard `dotnet build` works everywhere Bonsai.DAQmx can be installed
+- **No Special Flags**: No conditional compilation or build flags needed
+- **Standard Debugging**: Full IntelliSense and debugging support for DAQmx types
+- **Cross-Platform**: Works on Windows, and builds work on CI systems
 
 ## End User Installation
 
-When users install the package on Windows with DAQmx:
+When users install the package:
 
 ```bash
 Install-Package Aind.Ni.DigitalOutput.Configuration
 ```
 
-The package will:
-1. ✅ Install pre-compiled assemblies immediately
-2. ✅ Work correctly with NI-DAQmx when drivers are available
-3. ✅ Provide meaningful error messages when DAQmx is not available
-4. ✅ Integrate seamlessly with Bonsai workflows
+The package manager will:
+1. ✅ Install our package with pre-compiled assemblies
+2. ✅ Automatically install Bonsai.DAQmx as a dependency
+3. ✅ Provide full DAQmx functionality when drivers are available
+4. ✅ Work seamlessly in Bonsai workflows
 
 ## Expected CI Results
 
 | Job | Expected Result | Meaning |
 |-----|----------------|---------|
-| Build | ✅ Pass | Conditional compilation creates working assemblies |
-| Package | ✅ Pass | NuGet package created with pre-compiled DLLs |
-| Publish | ✅ Pass | Package successfully published to NuGet.org |
+| Build | ✅ Pass | Standard build using dependency assemblies |
+| Package | ✅ Pass | Professional NuGet package created |
+| Publish | ✅ Pass | Package successfully published |
 
 ## Runtime Behavior
 
-The packaged assemblies handle DAQmx availability gracefully:
-
-- **With NI-DAQmx installed**: Full functionality available
-- **Without NI-DAQmx**: Clear error messages guide users to install drivers
-- **In CI environments**: Builds succeed, packages are created successfully
+The packaged assemblies provide:
+- **Full DAQmx functionality** when NI-DAQmx drivers are installed
+- **Clear error messages** when drivers are missing (standard DAQmx behavior)
+- **Professional user experience** matching other DAQmx-based packages
 
 ## Summary
 
-This strategy eliminates the "expected failure" approach and instead:
-- ✅ **Always builds successfully** using conditional compilation
-- ✅ **Creates working packages** with pre-compiled assemblies  
-- ✅ **Provides full functionality** for end users with proper DAQmx installations
-- ✅ **Enables cross-platform development** through build flags
-- ✅ **Maintains professional standards** with reliable CI/CD pipelines
+This strategy represents a **mature, professional approach** that:
+- ✅ **Eliminates complexity** by using existing infrastructure
+- ✅ **Follows best practices** for .NET package development
+- ✅ **Provides reliable CI/CD** with no expected failures
+- ✅ **Maintains clean code** without conditional compilation
+- ✅ **Delivers professional results** that work like any other .NET package
 
-The result is a robust, professional package distribution system that works reliably for both developers and end users.
+The result is a robust, maintainable package that integrates seamlessly with the Bonsai ecosystem while following industry-standard development practices.
