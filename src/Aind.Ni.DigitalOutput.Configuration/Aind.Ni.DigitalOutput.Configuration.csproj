@@ -22,6 +22,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,6 +30,10 @@
     <PackageReference Include="Bonsai.DAQmx" Version="0.4.0" />
     <PackageReference Include="OpenCV.Net" Version="3.4.1" />
     <PackageReference Include="Rx-Linq" Version="2.2.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>
