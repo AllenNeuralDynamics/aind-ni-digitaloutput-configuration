@@ -4,13 +4,19 @@
 ![.NET Framework](https://img.shields.io/badge/.NET%20Framework-4.7.2-blue)
 [![Bonsai](https://img.shields.io/badge/bonsai-v2.7.0-purple)](https://bonsai-rx.org)
 
-A [Bonsai](https://bonsai-rx.org/) library for configuring NI-DAQmx Digital Output Channels externally from workflows.
+A [Bonsai](https://bonsai-rx.org/) library that provides configurable NI-DAQmx Digital Output functionality with external channel configuration support.
 
 ## Overview
 
-This package provides a node for exposing NI-DAQmx Digital Output Channel configuration properties that can be set externally from workflows, instead of only through the Bonsai UI. This enables programmatic configuration and better workflow automation for digital output tasks.
+This package provides a flexible alternative to the standard Bonsai.DAQmx `DigitalOutput` node by allowing channel configuration to be provided externally at runtime. This enables more dynamic and reusable digital output workflows.
 
-**Version 1.2.0** includes new property mapping capabilities to fix "Expression must be writeable" errors and compatibility fixes for CI/CD builds with published Bonsai.DAQmx NuGet packages.
+## Features
+
+- **Runtime Channel Configuration**: Configure digital output channels through external configuration sources
+- **External Configuration Support**: Channel settings can come from files, other nodes, or external systems
+- **CI Build Compatibility**: Supports builds without DAQmx runtime for continuous integration
+- **Type-Safe Configuration**: Uses strongly-typed configuration objects with validation
+- **Multiple Data Types**: Supports boolean, Mat, and array inputs like the standard DigitalOutput
 
 ## Installation
 
@@ -24,102 +30,113 @@ To install the aind-ni-digitaloutput-configuration package:
 ## Prerequisites
 
 - **Windows Operating System** - Bonsai and NI-DAQmx are Windows-only
-- **NI-DAQmx Runtime** - Install the National Instruments DAQmx drivers
-- **Bonsai** - Version 2.9.0 or later
+- **NI-DAQmx Runtime** - Install the National Instruments DAQmx drivers for full functionality
+- **Bonsai** - Version 2.7.0 or later
 
-### Key Components
+## Components
 
-- **DigitalOutputConfigurationSource**: Generates a configuration object for Digital Output Channels that can be used with other DAQmx nodes
-- **DigitalOutputConfig**: Configuration object containing channel setup parameters
-- **DigitalLineGrouping**: Enum specifying how to group digital lines into virtual channels
+This package provides four main components:
 
-### Example
+### ConfigurableDigitalOutput
+The main digital output operator that accepts external channel configuration. This is a more flexible alternative to the standard `DigitalOutput` node.
 
-See the [examples directory](examples/) for sample workflows:
-- [DigitalOutputExample.bonsai](examples/DigitalOutputExample.bonsai) - Basic digital output configuration
+**Properties:**
+- `TaskName`: Optional name for the DAQmx task
+- `SignalSource`: Optional source terminal for the clock
+- `SampleRate`: Sampling rate in samples per second (default: 1000.0)
+- `BufferSize`: Buffer size for continuous samples (default: 1000)
+- `ActiveEdge`: Clock edge for sampling (Rising/Falling)
+- `SampleMode`: Finite or continuous sample generation
 
-## Usage
+### DigitalOutputConfigurationSource
+Generates configuration objects for digital output channels that can be connected to `ConfigurableDigitalOutput`.
 
-### Method 1: Property Mapping (Recommended for DigitalOutput.Channels)
+**Properties:**
+- `ChannelName`: Name for the virtual channel
+- `Lines`: Physical lines to use (e.g., "Dev1/port0/line0:7")
+- `Grouping`: How to group digital lines (OneChannelForEachLine/OneChannelForAllLines)
 
-When you need to configure the `Channels` property of a `DigitalOutput` node directly:
+### DigitalOutputChannelConfig
+Configuration data structure containing channel setup parameters:
+- `ChannelName`: The virtual channel name
+- `Lines`: Physical DAQmx lines specification
+- `Grouping`: Line grouping method
 
-1. Add a `ConfigureDigitalOutputChannels` node to your workflow
-2. Configure the properties:
-   - `ChannelName`: Name for the virtual channel  
-   - `Lines`: Physical lines to use (e.g., "Dev1/port0/line0:7")
-   - `Grouping`: How to group the lines
-3. Connect the output directly to the `Channels` property of a `DigitalOutput` node
-4. This approach avoids the "Expression must be writeable" error
+### ConfigureDigitalOutputChannels
+Combines multiple channel configurations into arrays for multi-channel scenarios.
 
-### Method 2: Configuration Source (For general configuration)
+## Usage Examples
 
-When you need to generate configuration data for custom processing:
+### Basic Single Channel Configuration
 
-1. Add a `DigitalOutputConfigurationSource` node to your Bonsai workflow
-2. Configure the properties as needed:
-   - `ChannelName`: Name for the virtual channel
-   - `Lines`: Physical lines to use (e.g., "Dev1/port0/line0:7")  
-   - `Grouping`: How to group the lines
-3. Connect the output to custom nodes that process `DigitalOutputConfig` objects
+```bonsai
+DigitalOutputConfigurationSource -> ConfigurableDigitalOutput
+BooleanSource                   /
+```
 
-### Method 3: External Configuration Class
+1. Add a `DigitalOutputConfigurationSource` and configure:
+   - `ChannelName`: "MyChannel"
+   - `Lines`: "Dev1/port0/line0"
+   - `Grouping`: OneChannelForEachLine
 
-For advanced scenarios requiring custom property mapping:
+2. Add a `ConfigurableDigitalOutput` node
+3. Connect both the configuration and your boolean data stream to the `ConfigurableDigitalOutput`
 
-1. Use the `DigitalOutputChannelConfig` class in your custom combinators
-2. This class provides implicit conversion to `DigitalOutputChannelConfiguration`
-3. Suitable for building reusable configuration components
+### Multi-Channel Configuration
 
-## Configuration
+```bonsai
+ConfigureDigitalOutputChannels -> ConfigurableDigitalOutput
+MatSource                     /
+```
 
-### ConfigureDigitalOutputChannels Properties (Recommended for Property Mapping)
+1. Configure multiple channels in `ConfigureDigitalOutputChannels`
+2. Connect to `ConfigurableDigitalOutput` along with your data source
 
-- `ChannelName`: The name to assign to the local created virtual channel. If not specified, the physical channel name will be used.
-- `Lines`: The names of the digital lines or ports used to create the local virtual channel (e.g., "Dev1/port0", "Dev1/port0/line0:7").
-- `Grouping`: Specifies how to group digital lines into one or more virtual channels:
-  - `OneChannelForEachLine`: Create one virtual channel for each line
-  - `OneChannelForAllLines`: Create one virtual channel for all lines
+### External Configuration from File
 
-### DigitalOutputConfigurationSource Properties (For Configuration Data Generation)
+You can load configuration from external sources and feed it to `ConfigurableDigitalOutput`, enabling dynamic reconfiguration without rebuilding workflows.
 
-- `ChannelName`: The name to assign to the local created virtual channel. If not specified, the physical channel name will be used.
-- `Lines`: The names of the digital lines or ports used to create the local virtual channel (e.g., "Dev1/port0", "Dev1/port0/line0:7").
-- `Grouping`: Specifies how to group digital lines into one or more virtual channels:
-  - `OneChannelForEachLine`: Create one virtual channel for each line
-  - `OneChannelForAllLines`: Create one virtual channel for all lines
+## Supported Data Types
 
-## Output
+`ConfigurableDigitalOutput` supports the same data types as the standard `DigitalOutput`:
 
-### ConfigureDigitalOutputChannels Output
+- `IObservable<bool>` - Single boolean values
+- `IObservable<bool[]>` - Boolean arrays  
+- `IObservable<Mat>` - OpenCV Mat objects with integer depth types (U8, S8, U16, S16, S32)
 
-This node produces `DigitalOutputChannelConfiguration` objects that can be directly connected to the `Channels` property of `DigitalOutput` nodes. This is the recommended approach for property mapping scenarios.
+## Architecture
 
-### DigitalOutputConfigurationSource Output
+### Design Principles
 
-This node produces `DigitalOutputConfig` objects that contain:
-- `ChannelName`: The configured channel name
-- `Lines`: The configured physical lines
-- `Grouping`: The configured line grouping
+This package solves the limitation of the standard `DigitalOutput` node which requires design-time channel configuration. By using a combinator pattern with external configuration, `ConfigurableDigitalOutput` enables:
 
-This configuration object can be consumed by custom nodes or used to programmatically configure digital output channels.
+1. **Runtime Configuration**: Channels can be configured from external sources
+2. **Reusable Workflows**: The same workflow can work with different hardware setups
+3. **Dynamic Reconfiguration**: Channel settings can change during workflow execution
+
+## Testing
+
+The package includes comprehensive tests in the `test/` directory:
+
+```bash
+# Run tests (requires DAQmx runtime)
+cd test
+dotnet run
+```
+
+Tests include:
+- Configuration object creation and validation
+- CI build compatibility
+- Basic functionality verification (without hardware)
 
 ## Deployment
 
-This package is automatically deployed to NuGet.org via a GitHub Actions workflow when a new tag is created on the `main` branch.
+This package can be deployed to NuGet.org via GitHub Actions workflow. To trigger a deployment:
 
-To trigger a deployment:
-
-1. Ensure the `Version` property in `src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj` is updated to the desired new version.
-2. Commit and push any changes to the `main` branch.
-3. Manually trigger the "Tag and Publish" workflow in the Actions tab of the GitHub repository.
-   - Set the "Publish to NuGet" input to `true`.
-   - The workflow will:
-     - Read the version from the `.csproj` file.
-     - Create a new Git tag in the format `v<version>`.
-     - Build the project.
-     - Pack the NuGet package.
-     - Push the package to NuGet.org using the `NUGET_API_KEY` repository secret.
+1. Update the version in the project file
+2. Commit and push changes to the `main` branch
+3. Create a new tag in the format `v<version>` 
+4. The automated workflow will build and publish the package
 
 ## License
 

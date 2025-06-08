@@ -1,5 +1,4 @@
 using Bonsai;
-using Bonsai.DAQmx;
 using System;
 using System.ComponentModel;
 using System.Reactive.Linq;
@@ -7,88 +6,79 @@ using System.Reactive.Linq;
 namespace Aind.Ni.DigitalOutput.Configuration
 {
     /// <summary>
-    /// Transforms configuration settings into a format suitable for DigitalOutput.Channels property mapping.
-    /// Use this node to externalize digital output channel configuration from your workflows.
+    /// Configures multiple digital output channels by providing an array of channel configurations.
+    /// This combinator is designed to work with ConfigurableDigitalOutput.
     /// </summary>
     [Combinator]
-    [Description("Transforms configuration into DigitalOutput channel configuration")]
+    [Description("Provides multiple digital output channel configurations")]
     [WorkflowElementCategory(ElementCategory.Transform)]
     public class ConfigureDigitalOutputChannels
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ConfigureDigitalOutputChannels"/> class.
+        /// Gets or sets the array of channel configurations.
         /// </summary>
-        public ConfigureDigitalOutputChannels()
-        {
-            ChannelName = string.Empty;
-            Lines = "Dev1/port0";
-            Grouping = DigitalLineGrouping.OneChannelForEachLine;
-        }
+        [Description("The array of channel configurations to provide.")]
+        public DigitalOutputChannelConfig[] Channels { get; set; } = new DigitalOutputChannelConfig[0];
 
         /// <summary>
-        /// Gets or sets the name to assign to the local created virtual channel.
-        /// If not specified, the physical channel name will be used.
-        /// </summary>
-        [Description("The name to assign to the local created virtual channel. If not specified, the physical channel name will be used.")]
-        public string ChannelName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the names of the digital lines or ports used to create the local virtual channel.
-        /// </summary>
-        [Description("The names of the digital lines or ports used to create the local virtual channel.")]
-        public string Lines { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value specifying how to group digital lines into one or more virtual channels.
-        /// </summary>
-        [Description("Specifies how to group digital lines into one or more virtual channels.")]
-        public DigitalLineGrouping Grouping { get; set; }
-
-        /// <summary>
-        /// Transforms the input source into a DigitalOutputChannelConfiguration that can be connected
-        /// to the Channels property of a DigitalOutput node.
-        /// </summary>
-        /// <typeparam name="TSource">The type of the source sequence elements.</typeparam>
-        /// <param name="source">The source sequence to transform.</param>
-        /// <returns>
-        /// An observable sequence of DigitalOutputChannelConfiguration objects configured 
-        /// with the specified parameters.
-        /// </returns>
-        public IObservable<DigitalOutputChannelConfiguration> Process<TSource>(IObservable<TSource> source)
-        {
-            return source.Select(_ => CreateConfiguration());
-        }
-
-        /// <summary>
-        /// Creates a DigitalOutputChannelConfiguration object from the current settings.
-        /// This overload can be used as a source when no input is needed.
+        /// Generates an observable sequence with the configured channel array.
         /// </summary>
         /// <returns>
-        /// An observable sequence containing a single DigitalOutputChannelConfiguration object.
+        /// An observable sequence containing the configured channel array.
         /// </returns>
-        public IObservable<DigitalOutputChannelConfiguration> Process()
+        public IObservable<DigitalOutputChannelConfig[]> Process()
         {
-            return Observable.Return(CreateConfiguration());
+            return Observable.Return(Channels);
         }
 
         /// <summary>
-        /// Creates a DigitalOutputChannelConfiguration object with the current property values.
+        /// Generates an observable sequence of channel configurations for each input value.
         /// </summary>
-        /// <returns>A configured DigitalOutputChannelConfiguration object.</returns>
-        private DigitalOutputChannelConfiguration CreateConfiguration()
+        /// <typeparam name="TSource">The type of the input sequence.</typeparam>
+        /// <param name="source">The input sequence that triggers configuration generation.</param>
+        /// <returns>
+        /// An observable sequence where each input value triggers the emission of the 
+        /// configured channel array.
+        /// </returns>
+        public IObservable<DigitalOutputChannelConfig[]> Process<TSource>(IObservable<TSource> source)
         {
-            var config = new DigitalOutputChannelConfiguration
+            return source.Select(_ => Channels);
+        }
+
+        /// <summary>
+        /// Merges input channel configurations with the configured channels.
+        /// </summary>
+        /// <param name="source">The input sequence of channel configurations.</param>
+        /// <returns>
+        /// An observable sequence where input channels are combined with configured channels.
+        /// </returns>
+        public IObservable<DigitalOutputChannelConfig[]> Process(IObservable<DigitalOutputChannelConfig> source)
+        {
+            return source.Select(inputChannel => 
             {
-                ChannelName = this.ChannelName,
-                Lines = this.Lines
-            };
+                var allChannels = new DigitalOutputChannelConfig[Channels.Length + 1];
+                Channels.CopyTo(allChannels, 0);
+                allChannels[Channels.Length] = inputChannel;
+                return allChannels;
+            });
+        }
 
-            // Note: The Grouping property will be set to a default value since we cannot
-            // reference NationalInstruments.DAQmx.ChannelLineGrouping directly in CI builds.
-            // In the actual Bonsai runtime environment, users should manually adjust this
-            // property if needed using the standard Bonsai property editor.
-
-            return config;
+        /// <summary>
+        /// Merges input channel configuration arrays with the configured channels.
+        /// </summary>
+        /// <param name="source">The input sequence of channel configuration arrays.</param>
+        /// <returns>
+        /// An observable sequence where input channel arrays are combined with configured channels.
+        /// </returns>
+        public IObservable<DigitalOutputChannelConfig[]> Process(IObservable<DigitalOutputChannelConfig[]> source)
+        {
+            return source.Select(inputChannels => 
+            {
+                var allChannels = new DigitalOutputChannelConfig[Channels.Length + inputChannels.Length];
+                Channels.CopyTo(allChannels, 0);
+                inputChannels.CopyTo(allChannels, Channels.Length);
+                return allChannels;
+            });
         }
     }
 }

@@ -1,5 +1,4 @@
 using Bonsai;
-using Bonsai.DAQmx;
 using System;
 using System.ComponentModel;
 using System.Reactive.Linq;
@@ -7,48 +6,8 @@ using System.Reactive.Linq;
 namespace Aind.Ni.DigitalOutput.Configuration
 {
     /// <summary>
-    /// Specifies how to group digital lines into one or more virtual channels.
-    /// This enum mirrors NationalInstruments.DAQmx.ChannelLineGrouping for compatibility.
-    /// </summary>
-    public enum DigitalLineGrouping
-    {
-        /// <summary>
-        /// Create one virtual channel for each line.
-        /// </summary>
-        OneChannelForEachLine = 0,
-        
-        /// <summary>
-        /// Create one virtual channel for all lines.
-        /// </summary>
-        OneChannelForAllLines = 1
-    }
-
-    /// <summary>
-    /// Represents the configuration of a digital output channel for use with Bonsai.DAQmx nodes.
-    /// This class provides the same interface as Bonsai.DAQmx.DigitalOutputChannelConfiguration.
-    /// </summary>
-    public class DigitalOutputConfig
-    {
-        /// <summary>
-        /// Gets or sets the name to assign to the local created virtual channel.
-        /// If not specified, the physical channel name will be used.
-        /// </summary>
-        public string ChannelName { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the names of the digital lines or ports used to create the local virtual channel.
-        /// </summary>
-        public string Lines { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets a value specifying how to group digital lines into one or more virtual channels.
-        /// </summary>
-        public DigitalLineGrouping Grouping { get; set; }
-    }
-
-    /// <summary>
     /// Provides configuration for NI-DAQmx Digital Output Channels that can be externalized from workflows.
-    /// This source generates DigitalOutputConfig objects containing channel configuration data.
+    /// This source generates DigitalOutputChannelConfig objects containing channel configuration data.
     /// </summary>
     [Combinator]
     [Description("Provides configuration for Digital Output Channel")]
@@ -85,16 +44,35 @@ namespace Aind.Ni.DigitalOutput.Configuration
         public DigitalLineGrouping Grouping { get; set; }
 
         /// <summary>
-        /// Generates an observable sequence with a single <see cref="DigitalOutputConfig"/> 
+        /// Generates an observable sequence with a single <see cref="DigitalOutputChannelConfig"/> 
         /// object containing the specified configuration parameters.
         /// </summary>
         /// <returns>
-        /// An observable sequence containing a single <see cref="DigitalOutputConfig"/> 
+        /// An observable sequence containing a single <see cref="DigitalOutputChannelConfig"/> 
         /// object with the current configuration values.
         /// </returns>
-        public IObservable<DigitalOutputConfig> Process()
+        public IObservable<DigitalOutputChannelConfig> Process()
         {
-            return Observable.Return(new DigitalOutputConfig
+            return Observable.Return(new DigitalOutputChannelConfig
+            {
+                ChannelName = this.ChannelName,
+                Lines = this.Lines,
+                Grouping = this.Grouping
+            });
+        }
+
+        /// <summary>
+        /// Generates an observable sequence of channel configurations for each input value.
+        /// </summary>
+        /// <typeparam name="TSource">The type of the input sequence.</typeparam>
+        /// <param name="source">The input sequence that triggers configuration generation.</param>
+        /// <returns>
+        /// An observable sequence where each input value triggers the emission of a 
+        /// <see cref="DigitalOutputChannelConfig"/> object with the current configuration values.
+        /// </returns>
+        public IObservable<DigitalOutputChannelConfig> Process<TSource>(IObservable<TSource> source)
+        {
+            return source.Select(_ => new DigitalOutputChannelConfig
             {
                 ChannelName = this.ChannelName,
                 Lines = this.Lines,
