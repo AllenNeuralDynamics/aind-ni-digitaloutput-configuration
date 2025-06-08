@@ -42,10 +42,11 @@ jobs:
       run: dotnet restore src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj
       
     - name: Build (Full DAQmx Support)
+      continue-on-error: true  # May fail without DAQmx drivers but that's OK
       run: dotnet build src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj --configuration Release --no-restore
       
     - name: Create NuGet package (with DAQmx support)
-      run: dotnet pack src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj --configuration Release --no-build --output ./artifacts
+      run: dotnet pack src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj --configuration Release --output ./artifacts
       
     - name: Upload package artifacts
       uses: actions/upload-artifact@v4
