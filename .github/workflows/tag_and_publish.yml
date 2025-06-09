@@ -6,7 +6,7 @@ on:
       publish_to_nuget:
         description: 'Publish to NuGet (true/false)'
         required: true
-        default: 'false'
+        default: false
         type: boolean
 
 jobs:
@@ -45,15 +45,37 @@ jobs:
       run: dotnet build src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj --configuration Release --no-restore
       
     - name: Create NuGet package
-      run: dotnet pack src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj --configuration Release --output ./artifacts --no-build
+      run: |
+        echo "📦 Creating NuGet package..."
+        dotnet pack src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj --configuration Release --output ./artifacts --no-build
+        echo "✅ Package creation completed"
+      shell: pwsh
       
-    - name: Verify package
+    - name: Verify package creation
       run: |
         echo "✅ NuGet package created successfully using Bonsai.DAQmx assemblies"
         echo "Package contains pre-compiled assemblies with full DAQmx functionality"
         echo "Works seamlessly with Bonsai.DAQmx package dependency"
-        Get-ChildItem ./artifacts/*.nupkg | ForEach-Object {
-          echo "Package: $($_.Name) ($($_.Length) bytes)"
+        
+        echo "Contents of artifacts directory:"
+        if (Test-Path "./artifacts") {
+          Get-ChildItem ./artifacts -Recurse | ForEach-Object {
+            echo "File: $($_.Name) ($($_.Length) bytes)"
+          }
+        } else {
+          echo "❌ Artifacts directory does not exist!"
+          exit 1
+        }
+        
+        echo "Verifying .nupkg files:"
+        $nupkgFiles = Get-ChildItem ./artifacts/*.nupkg -ErrorAction SilentlyContinue
+        if ($nupkgFiles) {
+          $nupkgFiles | ForEach-Object {
+            echo "✅ Package: $($_.Name) ($($_.Length) bytes)"
+          }
+        } else {
+          echo "❌ No .nupkg files found!"
+          exit 1
         }
       shell: pwsh
       
@@ -63,9 +85,76 @@ jobs:
         name: nuget-package-v${{ steps.extract_version.outputs.VERSION }}
         path: ./artifacts/*.nupkg
         
+    - name: Debug before publish
+      if: ${{ inputs.publish_to_nuget == true }}
+      run: |
+        echo "🔍 About to publish packages..."
+        echo "Current directory: $(Get-Location)"
+        
+        if (Test-Path "./artifacts") {
+          echo "✅ Artifacts directory exists"
+          $nupkgFiles = Get-ChildItem ./artifacts/*.nupkg -ErrorAction SilentlyContinue
+          if ($nupkgFiles) {
+            echo "✅ Found $($nupkgFiles.Count) package(s) to publish:"
+            $nupkgFiles | ForEach-Object {
+              echo "  📦 $($_.Name) - $($_.FullName)"
+            }
+          } else {
+            echo "❌ No .nupkg files found in artifacts directory!"
+            echo "Directory contents:"
+            Get-ChildItem ./artifacts -Recurse
+            exit 1
+          }
+        } else {
+          echo "❌ Artifacts directory does not exist!"
+          exit 1
+        }
+      shell: pwsh
+        
     - name: Publish to NuGet
       if: ${{ inputs.publish_to_nuget == true }}
-      run: dotnet nuget push ./artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+      env:
+        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+      run: |
+        echo "🚀 Publishing packages to NuGet.org..."
+        
+        # Verify artifacts directory exists
+        if (-not (Test-Path "./artifacts")) {
+          echo "❌ Artifacts directory does not exist!"
+          exit 1
+        }
+        
+        # Build the exact package filename
+        $packageName = "Aind.Ni.DigitalOutput.Configuration.${{ steps.extract_version.outputs.VERSION }}.nupkg"
+        $packagePath = "./artifacts/$packageName"
+        
+        echo "📦 Looking for package: $packageName"
+        echo "📂 Full path: $packagePath"
+        
+        # Verify the specific package file exists
+        if (-not (Test-Path $packagePath)) {
+          echo "❌ Package file does not exist: $packagePath"
+          echo "Available files in artifacts directory:"
+          Get-ChildItem ./artifacts -Recurse
+          exit 1
+        }
+        
+        echo "✅ Found package: $packageName"
+        $fileInfo = Get-Item $packagePath
+        echo "📊 Package size: $($fileInfo.Length) bytes"
+        
+        echo "📤 Publishing: $packageName"
+        dotnet nuget push "$packagePath" --api-key $env:NUGET_API_KEY --source https://api.nuget.org/v3/index.json --skip-duplicate
+        
+        if ($LASTEXITCODE -eq 0) {
+          echo "✅ Successfully published: $packageName"
+        } else {
+          echo "❌ Failed to publish: $packageName"
+          exit 1
+        }
+        
+        echo "🎉 Package published successfully!"
+      shell: pwsh
       
     - name: Create GitHub Release
       if: ${{ inputs.publish_to_nuget == true }}
