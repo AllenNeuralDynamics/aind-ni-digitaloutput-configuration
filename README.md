@@ -27,8 +27,11 @@ This package provides Bonsai combinators and sinks for NI-DAQmx digital output, 
 ## Prerequisites
 
 - **Windows**
-- **NI-DAQmx Runtime**
+- **NI-DAQmx Runtime** (required for real hardware use)
+- **Bonsai.DAQmx** (must be installed in Bonsai for this package to work)
 - **Bonsai 2.7.0+**
+
+> **Note:** This package does not include the National Instruments DAQmx drivers or Bonsai.DAQmx. You must install them separately. For CI builds, DAQmx functionality is stubbed and not available.
 
 ## Components
 
@@ -61,7 +64,9 @@ BooleanSource                  /
 - `IObservable<bool[]>`
 - `IObservable<bool[,]>`
 - `IObservable<byte[,]>`
-
+git add .
+git commit -m "refactor: replace all digital output configuration code with Daq_config.cs, update docs, bump version to 1.6.0, and clarify node usage"
+git push
 
 ### Node Descriptions
 
