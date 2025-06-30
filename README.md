@@ -4,140 +4,71 @@
 ![.NET Framework](https://img.shields.io/badge/.NET%20Framework-4.7.2-blue)
 [![Bonsai](https://img.shields.io/badge/bonsai-v2.7.0-purple)](https://bonsai-rx.org)
 
-A [Bonsai](https://bonsai-rx.org/) library that provides configurable NI-DAQmx Digital Output functionality with external channel configuration support.
+A [Bonsai](https://bonsai-rx.org/) extension for configurable NI-DAQmx Digital Output, using runtime channel configuration.
 
 ## Overview
 
-This package provides a flexible alternative to the standard Bonsai.DAQmx `DigitalOutput` node by allowing channel configuration to be provided externally at runtime. This enables more dynamic and reusable digital output workflows.
+This package provides Bonsai combinators and sinks for NI-DAQmx digital output, allowing channel configuration to be provided externally at runtime. It is a drop-in replacement for the standard Bonsai.DAQmx DigitalOutput node, but with more flexible configuration.
 
 ## Features
 
-- **Runtime Channel Configuration**: Configure digital output channels through external configuration sources
-- **External Configuration Support**: Channel settings can come from files, other nodes, or external systems
-- **CI Build Compatibility**: Supports builds without DAQmx runtime for continuous integration
-- **Type-Safe Configuration**: Uses strongly-typed configuration objects with validation
-- **Multiple Data Types**: Supports boolean, Mat, and array inputs like the standard DigitalOutput
+- **Runtime Channel Configuration**: Configure digital output channels at runtime
+- **Type-Safe Configuration**: Uses strongly-typed configuration objects
+- **Multiple Data Types**: Supports boolean, array, and matrix inputs
+- **Bonsai 2.7+ Compatible**
 
 ## Installation
 
-To install the aind-ni-digitaloutput-configuration package:
-
 1. Open Bonsai
-2. Click on the "Tools" menu and select "Manage Packages"
-3. Click on "Settings" and add the NuGet package source where this package is hosted
-4. Search for "Aind.Ni.DigitalOutput.Configuration" and install
+2. Go to "Tools" > "Manage Packages"
+3. Add the NuGet source for this package
+4. Search for `Aind.Ni.DigitalOutput.Configuration` and install
 
 ## Prerequisites
 
-- **Windows Operating System** - Bonsai and NI-DAQmx are Windows-only
-- **NI-DAQmx Runtime** - Install the National Instruments DAQmx drivers for full functionality
-- **Bonsai** - Version 2.7.0 or later
+- **Windows**
+- **NI-DAQmx Runtime**
+- **Bonsai 2.7.0+**
 
 ## Components
 
-This package provides four main components:
-
-### ConfigurableDigitalOutput
-The main digital output operator that accepts external channel configuration. This is a more flexible alternative to the standard `DigitalOutput` node.
-
-**Properties:**
-- `TaskName`: Optional name for the DAQmx task
-- `SignalSource`: Optional source terminal for the clock
-- `SampleRate`: Sampling rate in samples per second (default: 1000.0)
-- `BufferSize`: Buffer size for continuous samples (default: 1000)
-- `ActiveEdge`: Clock edge for sampling (Rising/Falling)
-- `SampleMode`: Finite or continuous sample generation
-
 ### DigitalOutputConfigurationSource
-Generates configuration objects for digital output channels that can be connected to `ConfigurableDigitalOutput`.
+Generates configuration objects for digital output channels.
 
-**Properties:**
 - `ChannelName`: Name for the virtual channel
 - `Lines`: Physical lines to use (e.g., "Dev1/port0/line0:7")
 - `Grouping`: How to group digital lines (OneChannelForEachLine/OneChannelForAllLines)
 
-### DigitalOutputChannelConfig
-Configuration data structure containing channel setup parameters:
-- `ChannelName`: The virtual channel name
-- `Lines`: Physical DAQmx lines specification
-- `Grouping`: Line grouping method
+### DigitalOutputWriter
+Writes digital values to NI-DAQmx digital output lines using the specified configuration.
 
-### ConfigureDigitalOutputChannels
-Combines multiple channel configurations into arrays for multi-channel scenarios.
+- `Channels`: Collection of DigitalOutputConfig
+- `SignalSource`, `SampleRate`, `ActiveEdge`, `SampleMode`, `BufferSize`: Standard DAQmx timing properties
 
-## Usage Examples
+### ToDigitalOutputConfigCollection
+Wraps a single DigitalOutputConfig into a collection for use with DigitalOutputWriter.
 
-### Basic Single Channel Configuration
+## Usage Example
 
 ```bonsai
-DigitalOutputConfigurationSource -> ConfigurableDigitalOutput
-BooleanSource                   /
+DigitalOutputConfigurationSource -> ToDigitalOutputConfigCollection -> DigitalOutputWriter
+BooleanSource                  /
 ```
-
-1. Add a `DigitalOutputConfigurationSource` and configure:
-   - `ChannelName`: "MyChannel"
-   - `Lines`: "Dev1/port0/line0"
-   - `Grouping`: OneChannelForEachLine
-
-2. Add a `ConfigurableDigitalOutput` node
-3. Connect both the configuration and your boolean data stream to the `ConfigurableDigitalOutput`
-
-### Multi-Channel Configuration
-
-```bonsai
-ConfigureDigitalOutputChannels -> ConfigurableDigitalOutput
-MatSource                     /
-```
-
-1. Configure multiple channels in `ConfigureDigitalOutputChannels`
-2. Connect to `ConfigurableDigitalOutput` along with your data source
-
-### External Configuration from File
-
-You can load configuration from external sources and feed it to `ConfigurableDigitalOutput`, enabling dynamic reconfiguration without rebuilding workflows.
 
 ## Supported Data Types
 
-`ConfigurableDigitalOutput` supports the same data types as the standard `DigitalOutput`:
+- `IObservable<bool>`
+- `IObservable<bool[]>`
+- `IObservable<bool[,]>`
+- `IObservable<byte[,]>`
 
-- `IObservable<bool>` - Single boolean values
-- `IObservable<bool[]>` - Boolean arrays  
-- `IObservable<Mat>` - OpenCV Mat objects with integer depth types (U8, S8, U16, S16, S32)
 
-## Architecture
+### Node Descriptions
 
-### Design Principles
-
-This package solves the limitation of the standard `DigitalOutput` node which requires design-time channel configuration. By using a combinator pattern with external configuration, `ConfigurableDigitalOutput` enables:
-
-1. **Runtime Configuration**: Channels can be configured from external sources
-2. **Reusable Workflows**: The same workflow can work with different hardware setups
-3. **Dynamic Reconfiguration**: Channel settings can change during workflow execution
-
-## Testing
-
-The package includes comprehensive tests in the `test/` directory:
-
-```bash
-# Run tests (requires DAQmx runtime)
-cd test
-dotnet run
-```
-
-Tests include:
-- Configuration object creation and validation
-- CI build compatibility
-- Basic functionality verification (without hardware)
-
-## Deployment
-
-This package can be deployed to NuGet.org via GitHub Actions workflow. To trigger a deployment:
-
-1. Update the version in the project file
-2. Commit and push changes to the `main` branch
-3. Create a new tag in the format `v<version>` 
-4. The automated workflow will build and publish the package
+- **DigitalOutputConfigurationSource**: Use this node to define the digital output channel parameters (name, lines, grouping) in your workflow. Outputs a configuration object.
+- **ToDigitalOutputConfigCollection**: Use this node to convert a single configuration into a collection, which is required by the writer node.
+- **DigitalOutputWriter**: Use this node to send digital data (bool, bool[], bool[,], or byte[,]) to the hardware, using the configuration(s) provided.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License. See [LICENSE](LICENSE).

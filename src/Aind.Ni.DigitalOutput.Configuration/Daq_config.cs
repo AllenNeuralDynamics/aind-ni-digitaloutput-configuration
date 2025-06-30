@@ -1,0 +1,264 @@
+// filepath: c:\Users\jeromel\Documents\Projects\PredictiveProcessingCommunity\Daq_config.cs
+using Bonsai;
+using System;
+using System.ComponentModel;
+using System.Reactive.Linq;
+using Bonsai.DAQmx;
+using NationalInstruments.DAQmx;
+using System.Collections.ObjectModel;
+using System.Reactive.Disposables;
+
+namespace Aind.Ni.DigitalOutput.Configuration
+{
+    /// <summary>
+    /// Specifies how to group digital lines into one or more virtual channels.
+    /// This enum mirrors NationalInstruments.DAQmx.ChannelLineGrouping for compatibility.
+    /// </summary>
+    public enum DigitalLineGrouping
+    {
+        /// <summary>
+        /// Create one virtual channel for each line.
+        /// </summary>
+        OneChannelForEachLine = 0,
+        
+        /// <summary>
+        /// Create one virtual channel for all lines.
+        /// </summary>
+        OneChannelForAllLines = 1
+    }
+
+    /// <summary>
+    /// Represents the configuration of a digital output channel for use with Bonsai.DAQmx nodes.
+    /// This class provides the same interface as Bonsai.DAQmx.DigitalOutputChannelConfiguration.
+    /// </summary>
+    public class DigitalOutputConfig
+    {
+        /// <summary>
+        /// Gets or sets the name to assign to the local created virtual channel.
+        /// If not specified, the physical channel name will be used.
+        /// </summary>
+        public string ChannelName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the names of the digital lines or ports used to create the local virtual channel.
+        /// </summary>
+        public string Lines { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value specifying how to group digital lines into one or more virtual channels.
+        /// </summary>
+        public DigitalLineGrouping Grouping { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DigitalOutputConfig"/> class with default values.
+        /// </summary>
+        public DigitalOutputConfig()
+        {
+            ChannelName = string.Empty;
+            Lines = string.Empty;
+            Grouping = DigitalLineGrouping.OneChannelForEachLine;
+        }
+    }
+
+    /// <summary>
+    /// Provides configuration for NI-DAQmx Digital Output Channels that can be externalized from workflows.
+    /// </summary>
+    [Combinator]
+    [Description("Provides configuration for Digital Output Channel")]
+    [WorkflowElementCategory(ElementCategory.Source)]
+    public class DigitalOutputConfigurationSource
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DigitalOutputConfigurationSource"/> class.
+        /// </summary>
+        public DigitalOutputConfigurationSource()
+        {
+            ChannelName = string.Empty;
+            Lines = "Dev1/port0";
+            Grouping = DigitalLineGrouping.OneChannelForEachLine;
+        }
+
+        /// <summary>
+        /// Gets or sets the name to assign to the local created virtual channel.
+        /// If not specified, the physical channel name will be used.
+        /// </summary>
+        [Description("The name to assign to the local created virtual channel. If not specified, the physical channel name will be used.")]
+        public string ChannelName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the names of the digital lines or ports used to create the local virtual channel.
+        /// </summary>
+        [Description("The names of the digital lines or ports used to create the local virtual channel.")]
+        public string Lines { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value specifying how to group digital lines into one or more virtual channels.
+        /// </summary>
+        [Description("Specifies how to group digital lines into one or more virtual channels.")]
+        public DigitalLineGrouping Grouping { get; set; }
+
+        /// <summary>
+        /// Generates an observable sequence with a single <see cref="DigitalOutputConfig"/> 
+        /// object containing the specified configuration parameters.
+        /// </summary>
+        /// <returns>
+        /// An observable sequence containing a single <see cref="DigitalOutputConfig"/> 
+        /// object with the current configuration values.
+        /// </returns>
+        public IObservable<DigitalOutputConfig> Process()
+        {
+            return Observable.Return(new DigitalOutputConfig
+            {
+                ChannelName = this.ChannelName,
+                Lines = this.Lines,
+                Grouping = this.Grouping
+            });
+        }
+    }
+
+    /// <summary>
+    /// Writes digital values to the NI-DAQmx digital output lines using the specified configuration.
+    /// </summary>
+    [DefaultProperty("Channels")]
+    [Description("Writes logical values to one or more DAQmx digital output lines from a sequence of sample buffers.")]
+    [WorkflowElementCategory(ElementCategory.Sink)]
+    public class DigitalOutputWriter : Sink<byte[,]>
+    {
+        private Collection<DigitalOutputConfig> channels = new Collection<DigitalOutputConfig>();
+
+        [Editor("Bonsai.Design.DescriptiveCollectionEditor, Bonsai.Design", DesignTypes.UITypeEditor)]
+        [Description("The collection of digital output channel configurations.")]
+        public Collection<DigitalOutputConfig> Channels
+        {
+            get { return channels; }
+            set { channels = value; }
+        }
+
+        [Description("The optional source terminal of the clock. If not specified, the internal clock of the device will be used.")]
+        public string SignalSource { get; set; }
+
+        [Description("The output sample rate in samples per second.")]
+        public double SampleRate { get; set; }
+
+        [Description("Specifies on which edge of a clock pulse sampling takes place.")]
+        public SampleClockActiveEdge ActiveEdge { get; set; }
+
+        [Description("Specifies whether the writer task will generate a finite number of samples or if it continuously generates samples.")]
+        public SampleQuantityMode SampleMode { get; set; }
+
+        [Description("The number of samples to generate, for finite samples, or the size of the buffer for continuous samples.")]
+        public int BufferSize { get; set; }
+
+        public DigitalOutputWriter()
+        {
+            SignalSource = string.Empty;
+            SampleRate = 1000;
+            ActiveEdge = SampleClockActiveEdge.Rising;
+            SampleMode = SampleQuantityMode.ContinuousSamples;
+            BufferSize = 1000;
+        }
+
+        public override IObservable<byte[,]> Process(IObservable<byte[,]> source)
+        {
+            return Observable.Defer(() =>
+            {
+                var task = new NationalInstruments.DAQmx.Task();
+                foreach (var config in Channels)
+                {
+                    task.DOChannels.CreateChannel(
+                        config.Lines,
+                        config.ChannelName,
+                        (NationalInstruments.DAQmx.ChannelLineGrouping)config.Grouping);
+                }
+                task.Timing.ConfigureSampleClock(
+                    SignalSource,
+                    SampleRate,
+                    ActiveEdge,
+                    SampleMode,
+                    BufferSize);
+                var writer = new DigitalMultiChannelWriter(task.Stream);
+                return Observable.Using(
+                    () => Disposable.Create(() =>
+                    {
+                        task.WaitUntilDone();
+                        task.Stop();
+                        task.Dispose();
+                    }),
+                    _ => source.Do(data =>
+                    {
+                        try { writer.WriteMultiSamplePort(true, data); }
+                        catch { task.Stop(); throw; }
+                    })
+                );
+            });
+        }
+
+        public IObservable<byte[,]> Process(IObservable<bool[]> source)
+        {
+            return Process(source.Select(bools =>
+            {
+                var data = new byte[1, bools.Length];
+                for (int i = 0; i < bools.Length; i++)
+                {
+                    data[0, i] = (byte)(bools[i] ? 1 : 0);
+                }
+                return data;
+            }));
+        }
+
+        public IObservable<byte[,]> Process(IObservable<bool[,]> source)
+        {
+            return Process(source.Select(bools =>
+            {
+                int rows = bools.GetLength(0);
+                int cols = bools.GetLength(1);
+                var data = new byte[rows, cols];
+                for (int i = 0; i < rows; i++)
+                    for (int j = 0; j < cols; j++)
+                        data[i, j] = (byte)(bools[i, j] ? 1 : 0);
+                return data;
+            }));
+        }
+
+        public IObservable<byte[,]> Process(IObservable<bool> source)
+        {
+            return Process(source.Select(b => {
+                var data = new byte[1, 1];
+                data[0, 0] = (byte)(b ? 1 : 0);
+                return data;
+            }));
+        }
+
+        public void Dispose()
+        {
+            // No-op: resources are managed per subscription
+        }
+    }
+
+    /// <summary>
+    /// Wraps a single DigitalOutputConfig into a collection.
+    /// </summary>
+    [Combinator]
+    [Description("Wraps a single DigitalOutputConfig into a collection.")]
+    [WorkflowElementCategory(ElementCategory.Transform)]
+    public class ToDigitalOutputConfigCollection
+    {
+        /// <summary>
+        /// Processes an observable sequence of DigitalOutputConfig and wraps each item in a Collection.
+        /// </summary>
+        /// <param name="source">The observable sequence of DigitalOutputConfig to wrap.</param>
+        /// <returns>
+        /// An observable sequence containing a Collection<DigitalOutputConfig> for each 
+        /// DigitalOutputConfig in the source sequence.
+        /// </returns>
+        public IObservable<Collection<DigitalOutputConfig>> Process(IObservable<DigitalOutputConfig> source)
+        {
+            return source.Select(config =>
+            {
+                var collection = new Collection<DigitalOutputConfig>();
+                collection.Add(config);
+                return collection;
+            });
+        }
+    }
+}
