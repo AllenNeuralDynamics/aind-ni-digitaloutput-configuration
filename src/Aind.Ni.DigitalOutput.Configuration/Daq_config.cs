@@ -63,10 +63,8 @@ namespace Aind.Ni.DigitalOutput.Configuration
     /// <summary>
     /// Provides configuration for NI-DAQmx Digital Output Channels that can be externalized from workflows.
     /// </summary>
-    [Combinator]
     [Description("Provides configuration for Digital Output Channel")]
-    [WorkflowElementCategory(ElementCategory.Source)]
-    public class DigitalOutputConfigurationSource
+    public class DigitalOutputConfigurationSource : Source<DigitalOutputConfig>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DigitalOutputConfigurationSource"/> class.
@@ -105,7 +103,7 @@ namespace Aind.Ni.DigitalOutput.Configuration
         /// An observable sequence containing a single <see cref="DigitalOutputConfig"/> 
         /// object with the current configuration values.
         /// </returns>
-        public IObservable<DigitalOutputConfig> Process()
+        public override IObservable<DigitalOutputConfig> Generate()
         {
             return Observable.Return(new DigitalOutputConfig
             {
@@ -121,7 +119,6 @@ namespace Aind.Ni.DigitalOutput.Configuration
     /// </summary>
     [DefaultProperty("Channels")]
     [Description("Writes logical values to one or more DAQmx digital output lines from a sequence of sample buffers.")]
-    [WorkflowElementCategory(ElementCategory.Sink)]
     public class DigitalOutputWriter : Sink<byte[,]>
     {
         private Collection<DigitalOutputConfig> channels = new Collection<DigitalOutputConfig>();
@@ -238,10 +235,8 @@ namespace Aind.Ni.DigitalOutput.Configuration
     /// <summary>
     /// Wraps a single DigitalOutputConfig into a collection.
     /// </summary>
-    [Combinator]
     [Description("Wraps a single DigitalOutputConfig into a collection.")]
-    [WorkflowElementCategory(ElementCategory.Transform)]
-    public class ToDigitalOutputConfigCollection
+    public class ToDigitalOutputConfigCollection : Transform<DigitalOutputConfig, Collection<DigitalOutputConfig>>
     {
         /// <summary>
         /// Processes an observable sequence of DigitalOutputConfig and wraps each item in a Collection.
@@ -251,7 +246,7 @@ namespace Aind.Ni.DigitalOutput.Configuration
         /// An observable sequence containing a Collection<DigitalOutputConfig> for each 
         /// DigitalOutputConfig in the source sequence.
         /// </returns>
-        public IObservable<Collection<DigitalOutputConfig>> Process(IObservable<DigitalOutputConfig> source)
+        public override IObservable<Collection<DigitalOutputConfig>> Process(IObservable<DigitalOutputConfig> source)
         {
             return source.Select(config =>
             {
