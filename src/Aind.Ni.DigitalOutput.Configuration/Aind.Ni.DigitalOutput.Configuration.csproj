@@ -8,9 +8,9 @@
     <AssemblyCompany>Allen Institute for Neural Dynamics</AssemblyCompany>
     <AssemblyProduct>Aind.Ni.DigitalOutput.Configuration</AssemblyProduct>
     <Copyright>Copyright © Allen Institute for Neural Dynamics 2024</Copyright>
-    <Version>1.6.0</Version>
-    <AssemblyVersion>1.6.0.0</AssemblyVersion>
-    <FileVersion>1.6.0.0</FileVersion>
+    <Version>1.7.0</Version>
+    <AssemblyVersion>1.7.0.0</AssemblyVersion>
+    <FileVersion>1.7.0.0</FileVersion>
     
     <!-- NuGet Package Metadata -->
     <PackageId>Aind.Ni.DigitalOutput.Configuration</PackageId>
@@ -33,18 +33,7 @@
     <PackageReference Include="Rx-Linq" Version="2.2.5" />
     <PackageReference Include="Bonsai.DAQmx" Version="0.3.0" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="NationalInstruments.Common">
-      <HintPath>..\..\..\daqmx\src\Externals\DAQmx\NationalInstruments.Common.dll</HintPath>
-    </Reference>
-    <Reference Include="NationalInstruments.DAQmx">
-      <HintPath>..\..\..\daqmx\src\Externals\DAQmx\x64\NationalInstruments.DAQmx.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
   <ItemGroup>
     <None Include="../../README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
-
 </Project>
