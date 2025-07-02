@@ -3,10 +3,10 @@
     <Title>Aind.Ni.DigitalOutput.Configuration</Title>
     <Description>A Bonsai library for configurable NI-DAQmx Digital Output with external channel configuration support.</Description>
     <PackageTags>bonsai daqmx ni digital-output configuration</PackageTags>
-    <TargetFramework>net462</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <Platform>x64</Platform>
     <Copyright>Copyright © Allen Institute for Neural Dynamics 2024</Copyright>
-    <Version>1.8.6</Version>
+    <Version>1.8.7</Version>
     <AssemblyName>Aind.Ni.DigitalOutput.Configuration</AssemblyName>
     <RootNamespace>Aind.Ni.DigitalOutput.Configuration</RootNamespace>
     <PackageId>Aind.Ni.DigitalOutput.Configuration</PackageId>
