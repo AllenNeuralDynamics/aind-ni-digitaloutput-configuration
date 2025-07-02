@@ -8,14 +8,15 @@
     <AssemblyCompany>Allen Institute for Neural Dynamics</AssemblyCompany>
     <AssemblyProduct>Aind.Ni.DigitalOutput.Configuration</AssemblyProduct>
     <Copyright>Copyright © Allen Institute for Neural Dynamics 2024</Copyright>
-    <Version>1.8.1</Version>
-    <AssemblyVersion>1.8.1.0</AssemblyVersion>
-    <FileVersion>1.8.1.0</FileVersion>
+    <Version>1.8.2</Version>
+    <AssemblyVersion>1.8.2.0</AssemblyVersion>
+    <FileVersion>1.8.2.0</FileVersion>
     
     <!-- NuGet Package Metadata -->
     <PackageId>Aind.Ni.DigitalOutput.Configuration</PackageId>
     <PackageDescription>A Bonsai library that provides configurable NI-DAQmx Digital Output functionality with external channel configuration support. Enables runtime channel configuration and more flexible digital output workflows. Uses Bonsai.DAQmx for DAQmx assembly dependencies.</PackageDescription>
-    <PackageTags>bonsai;daqmx;ni;digital-output;configuration;hardware;automation</PackageTags>
+    <Title>Aind.Ni.DigitalOutput.Configuration</Title>
+    <Authors>Allen Institute for Neural Dynamics</Authors>
     <PackageProjectUrl>https://github.com/AllenNeuralDynamics/aind-ni-digitaloutput-configuration</PackageProjectUrl>
     <RepositoryUrl>https://github.com/AllenNeuralDynamics/aind-ni-digitaloutput-configuration</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
@@ -23,6 +24,10 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <!-- <PackageIcon>icon.png</PackageIcon> -->
+    <PackageTags>bonsai;daqmx;ni;digital-output;configuration;hardware;automation;Allen Institute;AIND;neuroscience</PackageTags>
+    <PackageType>BonsaiLibrary</PackageType>
+    <PackageType>Dependency</PackageType>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(CI)' == 'true' ">
     <DefineConstants>CI_BUILD</DefineConstants>
