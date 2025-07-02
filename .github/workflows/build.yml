@@ -33,7 +33,7 @@ jobs:
         
     - name: Verify compiled assembly
       run: |
-        $dllPath = "src/Aind.Ni.DigitalOutput.Configuration/bin/x64/Release/net462/Aind.Ni.DigitalOutput.Configuration.dll"
+        $dllPath = "src/Aind.Ni.DigitalOutput.Configuration/bin/x64/Release/net472/Aind.Ni.DigitalOutput.Configuration.dll"
         if (Test-Path $dllPath) {
           echo "✅ Assembly created successfully: $dllPath"
           $fileInfo = Get-Item $dllPath
