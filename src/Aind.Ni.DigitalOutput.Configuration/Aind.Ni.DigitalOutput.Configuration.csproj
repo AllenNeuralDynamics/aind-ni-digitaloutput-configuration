@@ -1,41 +1,26 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
+  <PropertyGroup>    
+    <Title>Aind.Ni.DigitalOutput.Configuration</Title>
+    <Description>A Bonsai library for configurable NI-DAQmx Digital Output with external channel configuration support.</Description>
+    <PackageTags>bonsai daqmx ni digital-output configuration</PackageTags>
     <TargetFramework>net462</TargetFramework>
     <Platform>x64</Platform>
-    <AssemblyTitle>Aind.Ni.DigitalOutput.Configuration</AssemblyTitle>
-    <AssemblyDescription>A Bonsai library for configurable NI-DAQmx Digital Output with external channel configuration support.</AssemblyDescription>
-    <AssemblyCompany>Allen Institute for Neural Dynamics</AssemblyCompany>
-    <AssemblyProduct>Aind.Ni.DigitalOutput.Configuration</AssemblyProduct>
     <Copyright>Copyright © Allen Institute for Neural Dynamics 2024</Copyright>
-    <Version>1.8.3</Version>
-    <AssemblyVersion>1.8.3.0</AssemblyVersion>
-    <FileVersion>1.8.3.0</FileVersion>
-    <Description>A Bonsai library that provides configurable NI-DAQmx Digital Output functionality with external channel configuration support. Enables runtime channel configuration and more flexible digital output workflows. Uses Bonsai.DAQmx for DAQmx assembly dependencies.</Description>
-    <!-- NuGet Package Metadata -->
+    <Version>1.8.5</Version>
     <PackageId>Aind.Ni.DigitalOutput.Configuration</PackageId>
-    <PackageDescription>A Bonsai library that provides configurable NI-DAQmx Digital Output functionality with external channel configuration support. Enables runtime channel configuration and more flexible digital output workflows. Uses Bonsai.DAQmx for DAQmx assembly dependencies.</PackageDescription>
-    <Title>Aind.Ni.DigitalOutput.Configuration</Title>
     <Authors>Jerome Lecoq</Authors>
     <PackageProjectUrl>https://github.com/AllenNeuralDynamics/aind-ni-digitaloutput-configuration</PackageProjectUrl>
     <RepositoryUrl>https://github.com/AllenNeuralDynamics/aind-ni-digitaloutput-configuration</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <!-- <PackageIcon>icon.png</PackageIcon> -->
-    <PackageTags>bonsai daqmx ni digital-output configuration</PackageTags>
     <PackageType>Dependency;BonsaiLibrary</PackageType>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(CI)' == 'true' ">
-    <DefineConstants>CI_BUILD</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Bonsai.Core" Version="2.7.0" />
     <PackageReference Include="Bonsai.DAQmx" Version="0.3.0" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="../../README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 </Project>

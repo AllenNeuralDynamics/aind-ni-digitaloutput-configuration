@@ -123,6 +123,9 @@ namespace Aind.Ni.DigitalOutput.Configuration
     {
         private Collection<DigitalOutputConfig> channels = new Collection<DigitalOutputConfig>();
 
+        /// <summary>
+        /// Gets or sets the collection of digital output channel configurations.
+        /// </summary>
         [Editor("Bonsai.Design.DescriptiveCollectionEditor, Bonsai.Design", DesignTypes.UITypeEditor)]
         [Description("The collection of digital output channel configurations.")]
         public Collection<DigitalOutputConfig> Channels
@@ -131,21 +134,34 @@ namespace Aind.Ni.DigitalOutput.Configuration
             set { channels = value; }
         }
 
-        [Description("The optional source terminal of the clock. If not specified, the internal clock of the device will be used.")]
+        /// <summary>
+        /// Gets or sets the optional source terminal of the clock. If not specified, the internal clock of the device will be used.
+        /// </summary>
         public string SignalSource { get; set; }
 
-        [Description("The output sample rate in samples per second.")]
+        /// <summary>
+        /// Gets or sets the output sample rate in samples per second.
+        /// </summary>
         public double SampleRate { get; set; }
 
-        [Description("Specifies on which edge of a clock pulse sampling takes place.")]
+        /// <summary>
+        /// Gets or sets which edge of a clock pulse sampling takes place.
+        /// </summary>
         public SampleClockActiveEdge ActiveEdge { get; set; }
 
-        [Description("Specifies whether the writer task will generate a finite number of samples or if it continuously generates samples.")]
+        /// <summary>
+        /// Gets or sets whether the writer task will generate a finite number of samples or if it continuously generates samples.
+        /// </summary>
         public SampleQuantityMode SampleMode { get; set; }
 
-        [Description("The number of samples to generate, for finite samples, or the size of the buffer for continuous samples.")]
+        /// <summary>
+        /// Gets or sets the number of samples to generate, for finite samples, or the size of the buffer for continuous samples.
+        /// </summary>
         public int BufferSize { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DigitalOutputWriter"/> class.
+        /// </summary>
         public DigitalOutputWriter()
         {
             SignalSource = string.Empty;
@@ -155,6 +171,11 @@ namespace Aind.Ni.DigitalOutput.Configuration
             BufferSize = 1000;
         }
 
+        /// <summary>
+        /// Writes digital values to the NI-DAQmx digital output lines using the specified configuration.
+        /// </summary>
+        /// <param name="source">The observable sequence of byte arrays to write.</param>
+        /// <returns>An observable sequence that signals when writing is complete.</returns>
         public override IObservable<byte[,]> Process(IObservable<byte[,]> source)
         {
             return Observable.Defer(() =>
@@ -190,6 +211,11 @@ namespace Aind.Ni.DigitalOutput.Configuration
             });
         }
 
+        /// <summary>
+        /// Converts a sequence of boolean arrays to byte arrays and writes them to the output.
+        /// </summary>
+        /// <param name="source">The observable sequence of boolean arrays to write.</param>
+        /// <returns>An observable sequence that signals when writing is complete.</returns>
         public IObservable<byte[,]> Process(IObservable<bool[]> source)
         {
             return Process(source.Select(bools =>
@@ -203,6 +229,11 @@ namespace Aind.Ni.DigitalOutput.Configuration
             }));
         }
 
+        /// <summary>
+        /// Converts a sequence of 2D boolean arrays to byte arrays and writes them to the output.
+        /// </summary>
+        /// <param name="source">The observable sequence of 2D boolean arrays to write.</param>
+        /// <returns>An observable sequence that signals when writing is complete.</returns>
         public IObservable<byte[,]> Process(IObservable<bool[,]> source)
         {
             return Process(source.Select(bools =>
@@ -217,6 +248,11 @@ namespace Aind.Ni.DigitalOutput.Configuration
             }));
         }
 
+        /// <summary>
+        /// Converts a sequence of boolean values to byte arrays and writes them to the output.
+        /// </summary>
+        /// <param name="source">The observable sequence of boolean values to write.</param>
+        /// <returns>An observable sequence that signals when writing is complete.</returns>
         public IObservable<byte[,]> Process(IObservable<bool> source)
         {
             return Process(source.Select(b => {
@@ -226,6 +262,9 @@ namespace Aind.Ni.DigitalOutput.Configuration
             }));
         }
 
+        /// <summary>
+        /// Releases all resources used by the DigitalOutputWriter.
+        /// </summary>
         public void Dispose()
         {
             // No-op: resources are managed per subscription
@@ -243,7 +282,7 @@ namespace Aind.Ni.DigitalOutput.Configuration
         /// </summary>
         /// <param name="source">The observable sequence of DigitalOutputConfig to wrap.</param>
         /// <returns>
-        /// An observable sequence containing a Collection<DigitalOutputConfig> for each 
+        /// An observable sequence containing a Collection&lt;DigitalOutputConfig&gt; for each 
         /// DigitalOutputConfig in the source sequence.
         /// </returns>
         public override IObservable<Collection<DigitalOutputConfig>> Process(IObservable<DigitalOutputConfig> source)
