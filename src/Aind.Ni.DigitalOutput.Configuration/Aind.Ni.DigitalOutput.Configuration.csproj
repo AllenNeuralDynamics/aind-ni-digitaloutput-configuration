@@ -6,7 +6,9 @@
     <TargetFramework>net462</TargetFramework>
     <Platform>x64</Platform>
     <Copyright>Copyright © Allen Institute for Neural Dynamics 2024</Copyright>
-    <Version>1.8.5</Version>
+    <Version>1.8.6</Version>
+    <AssemblyName>Aind.Ni.DigitalOutput.Configuration</AssemblyName>
+    <RootNamespace>Aind.Ni.DigitalOutput.Configuration</RootNamespace>
     <PackageId>Aind.Ni.DigitalOutput.Configuration</PackageId>
     <Authors>Jerome Lecoq</Authors>
     <PackageProjectUrl>https://github.com/AllenNeuralDynamics/aind-ni-digitaloutput-configuration</PackageProjectUrl>
