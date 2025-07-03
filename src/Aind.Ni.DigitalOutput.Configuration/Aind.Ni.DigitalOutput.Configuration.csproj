@@ -5,7 +5,7 @@
     <PackageTags>bonsai;daqmx;ni;digitaloutput;configuration</PackageTags>
     <TargetFramework>net472</TargetFramework>
     <Platform>x64</Platform>
-    <Version>1.8.9</Version>
+    <Version>1.8.10</Version>
     <AssemblyName>Aind.Ni.DigitalOutput.Configuration</AssemblyName>
     <RootNamespace>Aind.Ni.DigitalOutput.Configuration</RootNamespace>
     <PackageId>Aind.Ni.DigitalOutput.Configuration</PackageId>
