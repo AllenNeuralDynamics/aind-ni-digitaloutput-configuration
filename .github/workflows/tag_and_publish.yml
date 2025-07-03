@@ -44,16 +44,22 @@ jobs:
     - name: Build using Bonsai.DAQmx assemblies
       run: dotnet build src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj --configuration Release --no-restore
       
-    - name: Remove <Platform>x64</Platform> from .csproj before packaging
+    - name: Remove <Platform>x64</Platform> from .csproj before build
       run: |
         $csproj = "src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj"
         (Get-Content $csproj) | Where-Object { $_ -notmatch '<Platform>x64</Platform>' } | Set-Content $csproj
       shell: pwsh
 
+    - name: Clean build outputs
+      run: dotnet clean src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj -p:Platform=x64
+
+    - name: Build for packaging (x64 platform)
+      run: dotnet build src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj --configuration Release -p:Platform=x64
+
     - name: Create NuGet package
       run: |
         echo "📦 Creating NuGet package..."
-        dotnet pack src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj --configuration Release --output ./artifacts
+        dotnet pack src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj --configuration Release --output ./artifacts -p:Platform=x64
         echo "✅ Package creation completed"
       shell: pwsh
       
