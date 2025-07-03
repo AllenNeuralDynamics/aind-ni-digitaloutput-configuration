@@ -2,23 +2,21 @@
   <PropertyGroup>    
     <Title>Aind.Ni.DigitalOutput.Configuration</Title>
     <Description>A Bonsai library for configurable NI-DAQmx Digital Output with external channel configuration support.</Description>
-    <PackageTags>bonsai daqmx ni digital-output configuration</PackageTags>
+    <PackageTags>bonsai;daqmx;ni;digitaloutput;configuration</PackageTags>
     <TargetFramework>net472</TargetFramework>
     <Platform>x64</Platform>
-    <Copyright>Copyright © Allen Institute for Neural Dynamics 2024</Copyright>
-    <Version>1.8.7</Version>
+    <Version>1.8.8</Version>
     <AssemblyName>Aind.Ni.DigitalOutput.Configuration</AssemblyName>
     <RootNamespace>Aind.Ni.DigitalOutput.Configuration</RootNamespace>
     <PackageId>Aind.Ni.DigitalOutput.Configuration</PackageId>
     <Authors>Jerome Lecoq</Authors>
+    <Company>Allen Institute for Neural Dynamics</Company>
     <PackageProjectUrl>https://github.com/AllenNeuralDynamics/aind-ni-digitaloutput-configuration</PackageProjectUrl>
     <RepositoryUrl>https://github.com/AllenNeuralDynamics/aind-ni-digitaloutput-configuration</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageType>Dependency;BonsaiLibrary</PackageType>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Bonsai.Core" Version="2.7.0" />
