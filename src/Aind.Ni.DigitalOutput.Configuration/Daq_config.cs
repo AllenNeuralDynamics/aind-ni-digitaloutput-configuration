@@ -188,12 +188,16 @@ namespace Aind.Ni.DigitalOutput.Configuration
                         config.ChannelName,
                         (NationalInstruments.DAQmx.ChannelLineGrouping)config.Grouping);
                 }
-                task.Timing.ConfigureSampleClock(
-                    SignalSource,
-                    SampleRate,
-                    ActiveEdge,
-                    SampleMode,
-                    BufferSize);
+                // Only configure sample clock for buffered output
+                if (SampleMode == SampleQuantityMode.ContinuousSamples || SampleMode == SampleQuantityMode.FiniteSamples)
+                {
+                    task.Timing.ConfigureSampleClock(
+                        SignalSource,
+                        SampleRate,
+                        ActiveEdge,
+                        SampleMode,
+                        BufferSize);
+                }
                 var writer = new DigitalMultiChannelWriter(task.Stream);
                 return Observable.Using(
                     () => Disposable.Create(() =>
@@ -211,22 +215,73 @@ namespace Aind.Ni.DigitalOutput.Configuration
             });
         }
 
+        // Add: ProcessSingleSample logic for static (on-demand) output
+        IObservable<TSource> ProcessSingleSample<TSource>(IObservable<TSource> source, Action<DigitalMultiChannelWriter, TSource> onNext)
+        {
+            return Observable.Defer(() =>
+            {
+                var task = new NationalInstruments.DAQmx.Task();
+                foreach (var config in Channels)
+                {
+                    task.DOChannels.CreateChannel(
+                        config.Lines,
+                        config.ChannelName,
+                        (NationalInstruments.DAQmx.ChannelLineGrouping)config.Grouping);
+                }
+                var writer = new DigitalMultiChannelWriter(task.Stream);
+                return Observable.Using(
+                    () => Disposable.Create(() =>
+                    {
+                        task.WaitUntilDone();
+                        task.Stop();
+                        task.Dispose();
+                    }),
+                    _ => source.Do(input =>
+                    {
+                        try { onNext(writer, input); }
+                        catch { task.Stop(); throw; }
+                    })
+                );
+            });
+        }
+
         /// <summary>
-        /// Converts a sequence of boolean arrays to byte arrays and writes them to the output.
+        /// Processes an observable sequence of single boolean values and writes each value as a static (on-demand) digital output sample.
+        /// </summary>
+        /// <param name="source">The observable sequence of boolean values to write.</param>
+        /// <returns>An observable sequence that signals when writing is complete.</returns>
+        public IObservable<byte[,]> Process(IObservable<bool> source)
+        {
+            return ProcessSingleSample(source, (writer, value) =>
+            {
+                writer.WriteSingleSampleSingleLine(true, new[] { value });
+            }).Select(_ => new byte[1, 1]); // Output shape for compatibility
+        }
+
+        /// <summary>
+        /// Processes an observable sequence of boolean arrays and writes each array as a static (on-demand) digital output sample.
         /// </summary>
         /// <param name="source">The observable sequence of boolean arrays to write.</param>
         /// <returns>An observable sequence that signals when writing is complete.</returns>
         public IObservable<byte[,]> Process(IObservable<bool[]> source)
         {
-            return Process(source.Select(bools =>
+            return ProcessSingleSample(source, (writer, data) =>
             {
-                var data = new byte[1, bools.Length];
-                for (int i = 0; i < bools.Length; i++)
-                {
-                    data[0, i] = (byte)(bools[i] ? 1 : 0);
-                }
-                return data;
-            }));
+                writer.WriteSingleSampleSingleLine(true, data);
+            }).Select(_ => new byte[1, 1]);
+        }
+
+        /// <summary>
+        /// Processes an observable sequence of byte arrays and writes each array as a static (on-demand) digital output sample.
+        /// </summary>
+        /// <param name="source">The observable sequence of byte arrays to write.</param>
+        /// <returns>An observable sequence that signals when writing is complete.</returns>
+        public IObservable<byte[,]> Process(IObservable<byte[]> source)
+        {
+            return ProcessSingleSample(source, (writer, data) =>
+            {
+                writer.WriteSingleSamplePort(true, data);
+            }).Select(_ => new byte[1, 1]);
         }
 
         /// <summary>
@@ -244,20 +299,6 @@ namespace Aind.Ni.DigitalOutput.Configuration
                 for (int i = 0; i < rows; i++)
                     for (int j = 0; j < cols; j++)
                         data[i, j] = (byte)(bools[i, j] ? 1 : 0);
-                return data;
-            }));
-        }
-
-        /// <summary>
-        /// Converts a sequence of boolean values to byte arrays and writes them to the output.
-        /// </summary>
-        /// <param name="source">The observable sequence of boolean values to write.</param>
-        /// <returns>An observable sequence that signals when writing is complete.</returns>
-        public IObservable<byte[,]> Process(IObservable<bool> source)
-        {
-            return Process(source.Select(b => {
-                var data = new byte[1, 1];
-                data[0, 0] = (byte)(b ? 1 : 0);
                 return data;
             }));
         }
