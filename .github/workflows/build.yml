@@ -23,7 +23,7 @@ jobs:
       run: dotnet restore src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj
       
     - name: Build (using Bonsai.DAQmx assemblies)
-      run: dotnet build src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj --no-restore --configuration Release
+      run: dotnet build src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj --no-restore --configuration Release -p:Platform=x64
       
     - name: Verify build success
       run: |
@@ -33,7 +33,7 @@ jobs:
         
     - name: Verify compiled assembly
       run: |
-        $dllPath = "src/Aind.Ni.DigitalOutput.Configuration/bin/x64/Release/net472/Aind.Ni.DigitalOutput.Configuration.dll"
+        $dllPath = "src/Aind.Ni.DigitalOutput.Configuration/bin/Release/net472/Aind.Ni.DigitalOutput.Configuration.dll"
         if (Test-Path $dllPath) {
           echo "✅ Assembly created successfully: $dllPath"
           $fileInfo = Get-Item $dllPath

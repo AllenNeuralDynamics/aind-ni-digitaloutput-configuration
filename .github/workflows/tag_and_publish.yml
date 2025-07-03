@@ -42,14 +42,8 @@ jobs:
       run: dotnet restore src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj
       
     - name: Build using Bonsai.DAQmx assemblies
-      run: dotnet build src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj --configuration Release --no-restore
+      run: dotnet build src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj --configuration Release --no-restore -p:Platform=x64
       
-    - name: Remove <Platform>x64</Platform> from .csproj before build
-      run: |
-        $csproj = "src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj"
-        (Get-Content $csproj) | Where-Object { $_ -notmatch '<Platform>x64</Platform>' } | Set-Content $csproj
-      shell: pwsh
-
     - name: Clean build outputs
       run: dotnet clean src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj -p:Platform=x64
 
