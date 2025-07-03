@@ -46,7 +46,7 @@ jobs:
       shell: pwsh
 
     - name: Create NuGet package
-      run: dotnet pack src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj --configuration Release --output ./artifacts --no-build
+      run: dotnet pack src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj --configuration Release --output ./artifacts -p:Platform=x64
       
     - name: Verify package contents
       run: |
