@@ -49,11 +49,11 @@ jobs:
         $csproj = "src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj"
         (Get-Content $csproj) | Where-Object { $_ -notmatch '<Platform>x64</Platform>' } | Set-Content $csproj
       shell: pwsh
-      
+
     - name: Create NuGet package
       run: |
         echo "📦 Creating NuGet package..."
-        dotnet pack src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj --configuration Release --output ./artifacts --no-build
+        dotnet pack src/Aind.Ni.DigitalOutput.Configuration/Aind.Ni.DigitalOutput.Configuration.csproj --configuration Release --output ./artifacts
         echo "✅ Package creation completed"
       shell: pwsh
       
